@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  qwen-vlm:
+    build: .
+    container_name: qwen-vlm
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./code:/workspace/code
+      - ./data:/workspace/data
+    ports:
+      - "8888:8888"  # Jupyter
+    working_dir: /workspace/code
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
