@@ -1,0 +1,5 @@
+# ignore all MP4 video files
+*.mp4
+*.pt
+**/groundingdino_swint_ogc.pth
+**/yolo_artifacts/*.pt

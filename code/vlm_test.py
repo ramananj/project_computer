@@ -1,3 +1,5 @@
+import time
+from tqdm import tqdm
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoTokenizer, AutoProcessor, AutoModelForCausalLM
 import torch
 from qwen_vl_utils import process_vision_info
@@ -26,40 +28,99 @@ processor = AutoProcessor.from_pretrained(model_name)
 # min_pixels = 256*28*28
 # max_pixels = 1280*28*28
 # processor = AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-7B-Instruct-AWQ", min_pixels=min_pixels, max_pixels=max_pixels)
+start = time.time()
+for c1 in tqdm(range(100)):
+    messages = [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {
+                    "type": "image",
+                    "image": "file:///workspace/data/test_soccer.jpg",
+                },
+                {"type": "text", "text": "Are these images identical?"},
+            ],
+        }
+    ]
 
-messages = [
-    {
-        "role": "user",
-        "content": [
-            {
-                "type": "image",
-                "image": "file:///workspace/data/test_soccer.jpg",
-            },
-            {"type": "text", "text": "Describe this image."},
-        ],
-    }
-]
+    # Preparation for inference
+    text = processor.apply_chat_template(
+        messages, tokenize=False, add_generation_prompt=True
+    )
+    image_inputs, video_inputs = process_vision_info(messages)
+    inputs = processor(
+        text=[text],
+        images=image_inputs,
+        videos=video_inputs,
+        padding=True,
+        return_tensors="pt",
+    )
+    inputs = inputs.to("cuda")
 
-# Preparation for inference
-text = processor.apply_chat_template(
-    messages, tokenize=False, add_generation_prompt=True
-)
-image_inputs, video_inputs = process_vision_info(messages)
-inputs = processor(
-    text=[text],
-    images=image_inputs,
-    videos=video_inputs,
-    padding=True,
-    return_tensors="pt",
-)
-inputs = inputs.to("cuda")
-
-# Inference: Generation of the output
-generated_ids = model.generate(**inputs, max_new_tokens=128)
-generated_ids_trimmed = [
-    out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
-]
-output_text = processor.batch_decode(
-    generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
-)
+    # Inference: Generation of the output
+    generated_ids = model.generate(**inputs, max_new_tokens=128)
+    generated_ids_trimmed = [
+        out_ids[len(in_ids) :] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)
+    ]
+    output_text = processor.batch_decode(
+        generated_ids_trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False
+    )
+end = time.time()
+print(f"total time: {end - start:.4f} seconds")
 print(output_text)

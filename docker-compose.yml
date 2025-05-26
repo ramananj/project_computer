@@ -1,16 +1,26 @@
+#  docker build   --network host   --memory 12g   --memory-swap 12g   -t rpi-brain .
+# docker-compose exec rpi-brain bash
+# docker rmi -f $(docker images -q) 2>/dev/null || true
+
 version: "3.9"
 
 services:
-  qwen-vlm:
-    build: .
-    container_name: qwen-vlm
+  rpi-brain:
+    network_mode: host
+    build:
+      context: .
+      network: host
+    container_name: rpi-brain
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
     volumes:
       - ./code:/workspace/code
       - ./data:/workspace/data
-    ports:
-      - "8888:8888"  # Jupyter
     working_dir: /workspace/code
-    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    command: >
+      bash -c "
+        pip install --no-cache-dir /workspace/GroundingDINO --no-build-isolation &&
+        exec jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+      "
+    # command: ["sleep","infinity"]
