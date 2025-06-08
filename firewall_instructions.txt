@@ -1,0 +1,8 @@
+rpi side:
+nc -zv 192.168.86.39 9000   # should now say “succeeded”
+
+if not run server side commands:
+sudo systemctl status firewalld
+sudo firewall-cmd --permanent --add-port=9000/tcp
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-ports    # should list 9000/tcp
